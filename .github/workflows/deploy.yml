@@ -1,0 +1,45 @@
+name: "React webpack deployment"
+on:
+    push:
+        branches:
+            - main
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get code
+              uses: actions/checkout@v4
+            - name: Build code
+              run: npm run build
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: dist-files
+                path: dist
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get code
+              uses: actions/checkout@v4
+            - name: Upload artifacts
+              uses: actions/download-artifact@v4
+              with:
+                name: dist-files
+            - name: List files
+              run: ls -la
+            - name: Deploying files
+              id: deploy
+              uses: .github/workflows/actions
+              with:
+                bucket: gha-custom-action-hosting03
+                dist-folder: ./dist
+              env:
+                AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+                AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            - name: Out information
+              run: |
+                echo "Live URL: ${{steps.deploy.outputs.website-url}}"
+
+            
+
+            
